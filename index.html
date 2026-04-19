@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juma Official Player</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 180px; overflow-x: hidden; }
+        #bg-video { position: fixed; right: 0; bottom: 0; min-width: 100%; min-height: 100%; z-index: -2; object-fit: cover; filter: brightness(15%); }
+        @keyframes rainbow { 0% { color: #ff0000; text-shadow: 0 0 15px #ff0000; } 33% { color: #00ff00; text-shadow: 0 0 15px #00ff00; } 66% { color: #00ffff; text-shadow: 0 0 15px #00ffff; } 100% { color: #ff0000; text-shadow: 0 0 15px #ff0000; } }
+        @keyframes rotateImg { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .jsh-logo { position: fixed; top: 20px; left: 20px; width: 100px; height: 100px; z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #1e3a5f 0%, #000 80%); border: 3px solid #333; box-shadow: 0 0 30px rgba(0, 255, 255, 0.4); }
+        .jsh-logo span { font-size: 28px; font-weight: 900; background: linear-gradient(to bottom, #BF953F, #FCF6BA, #B38728); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .search-container { position: fixed; top: 30px; right: 20px; z-index: 1000; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+        .search-container input { background: transparent; border: none; color: #fff; outline: none; width: 120px; }
+        .header { padding: 50px 10px; text-align: center; }
+        .header h1 { margin: 0; font-family: 'Dancing Script', cursive; font-size: 60px; animation: rainbow 5s infinite linear; }
+        .header p { font-family: 'Dancing Script', cursive; font-size: 24px; animation: rainbow 8s infinite linear; margin-top: 5px; }
+        .list-container { padding: 10px; }
+        .song-item { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); margin-bottom: 15px; border-radius: 60px 10px 60px 10px; border: 1px solid rgba(255,255,255,0.06); justify-content: space-between; cursor: pointer; transition: 0.3s; }
+        .song-item.hidden { display: none; }
+        .song-img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #fff; background-size: cover; background-position: center; animation: rotateImg 5s infinite linear; }
+        .song-name { font-family: 'Dancing Script', cursive; font-size: 16px; margin-left: 20px; animation: rainbow 10s infinite linear; }
+        .note-icon { font-size: 45px; animation: rainbow 6s infinite linear; filter: drop-shadow(0 0 10px currentColor); }
+        .visual-box { display: flex; align-items: center; gap: 8px; }
+        .equalizer { display: flex; align-items: flex-end; height: 40px; gap: 3px; display: none; }
+        .playing .equalizer { display: flex; }
+        .rhombus { width: 7px; background: #ff0000; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); animation: dance var(--d) infinite alternate; }
+        @keyframes dance { from { height: 6px; } to { height: var(--h); } }
+        .controls { position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.98); padding: 25px 40px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; border-top: 3px solid #222; z-index: 1000; }
+        .btn-center-group { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 40px; }
+        .btn { cursor: pointer; font-size: 40px; color: #fff; transition: 0.3s; animation: rainbow 8s infinite linear; }
+        #c-img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid #fff; background-size: cover; margin-right: 15px; animation: rotateImg 4s infinite linear; }
+        .volume-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 20px; }
+        #vol-slider { width: 100px; accent-color: #00ffcc; cursor: pointer; }
+        #progress { position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #111; cursor: pointer; }
+        #bar { height: 100%; background: linear-gradient(90deg, #ff0000, #00ffff, #ff00ff); width: 0%; box-shadow: 0 0 15px #00ffff; }
+        #c-txt { font-family:'Dancing Script'; font-size:19px; animation: rainbow 5s infinite linear; }
+    </style>
+</head>
+<body>
+<video autoplay muted loop id="bg-video"><source src="music/bg-video.mp4" type="video/mp4"></video>
+<div class="jsh-logo"><span>J.Sh</span></div>
+<div class="search-container">🔍 <input type="text" id="srch" placeholder="Ҷустуҷӯ..." onkeyup="filter()"></div>
+<div class="header"><h1>Juma Sharif</h1><p>Juma Official Player</p></div>
+<div id="list" class="list-container"></div>
+<div class="controls">
+    <div id="progress" onclick="seek(event)"><div id="bar"></div></div>
+    <div style="display:flex; align-items:center; width: 30%;"><div id="c-img"></div><div id="c-txt">Select Song</div></div>
+    <div class="btn-center-group">
+        <span class="btn" onclick="prev()">⏮</span>
+        <span class="btn" id="p-btn" onclick="toggle()">▶️</span>
+        <span class="btn" onclick="next()">⏭</span>
+    </div>
+    <div class="volume-box"><span>🔊</span><input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.8" oninput="setVol(this.value)"></div>
+</div>
+<audio id="audio"></audio>
+<script>
+    if('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    const songs = ["afsus", "bevafo", "biyo", "duo", "dust", "girya", "injabiyo", "ishk", "kuhistuni", "layli", "modar", "modarjon", "ochash", "oshno", "padar", "raft", "sangdil", "suzan", "tanhoyi", "tuonjo", "yoram"];
+    const listDiv = document.getElementById('list');
+    const audio = document.getElementById('audio');
+    let idx = -1;
+    function render() {
+        listDiv.innerHTML = '';
+        songs.forEach((s, i) => {
+            let eq = '<div class="equalizer">';
+            for(let j=0; j<10; j++) { eq += `<div class="rhombus" style="--h:${Math.random()*30+10}px; --d:${Math.random()*0.4+0.2}s"></div>`; }
+            eq += '</div>';
+            const item = document.createElement('div');
+            item.className = 'song-item'; item.id = 't-' + i;
+            item.onclick = () => play(i);
+            item.innerHTML = `<div style="display:flex; align-items:center;"><div class="song-img" style="background-image:url('music/${s}.jpg')"></div><div class="song-name">${s.toUpperCase()}</div></div><div class="visual-box">${eq} <span class="note-icon">♫</span></div>`;
+            listDiv.appendChild(item);
+        });
+    }
+    function play(i) {
+        if(idx !== -1) document.getElementById('t-'+idx).classList.remove('playing');
+        idx = i; audio.src = `music/${songs[idx]}.mp3`; audio.play();
+        document.getElementById('t-'+idx).classList.add('playing');
+        document.getElementById('c-img').style.backgroundImage = `url('music/${songs[idx]}.jpg')`;
+        document.getElementById('c-txt').innerText = songs[idx].toUpperCase();
+        document.getElementById('p-btn').innerText = '⏸';
+    }
+    function toggle() {
+        if(idx === -1) { play(0); return; }
+        audio.paused ? (audio.play(), document.getElementById('p-btn').innerText = '⏸') : (audio.pause(), document.getElementById('p-btn').innerText = '▶️');
+    }
+    function setVol(v) { audio.volume = v; }
+    function filter() {
+        const q = document.getElementById('srch').value.toLowerCase();
+        songs.forEach((s, i) => { document.getElementById('t-'+i).classList.toggle('hidden', !s.includes(q)); });
+    }
+    audio.ontimeupdate = () => { if(audio.duration) document.getElementById('bar').style.width = (audio.currentTime/audio.duration)*100 + '%'; };
+    function next() { play((idx + 1) % songs.length); }
+    function prev() { play((idx - 1 + songs.length) % songs.length); }
+    function seek(e) { audio.currentTime = (e.offsetX / e.target.offsetWidth) * audio.duration; }
+    audio.onended = next;
+    window.onload = render;
+</script>
+</body>
+</html>
